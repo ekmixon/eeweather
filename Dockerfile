@@ -1,4 +1,4 @@
-FROM python:3.6.6-stretch
+FROM python:3.6.14-stretch
 
 #### begin node
 RUN groupadd --gid 1000 node \
