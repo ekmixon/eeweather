@@ -27,7 +27,7 @@ import pytest
 
 @pytest.fixture
 def s():
-    return KeyValueStore("sqlite:///{}/cache.db".format(tempfile.mkdtemp()))
+    return KeyValueStore(f"sqlite:///{tempfile.mkdtemp()}/cache.db")
 
 
 def test_key_value_store(s):
@@ -58,7 +58,7 @@ def test_key_value_store(s):
 
 
 def test_key_value_store_repr(s):
-    assert repr(s) == 'KeyValueStore("{}")'.format(s.url)
+    assert repr(s) == f'KeyValueStore("{s.url}")'
 
 
 def test_key_value_store_clear_single_key(s):
@@ -75,7 +75,7 @@ def test_key_value_store_clear_single_key(s):
 def test_get_datetime_if_exists(s):
     data = None
     result = get_datetime_if_exists(data)
-    assert result == None
+    assert result is None
 
     data = [datetime(2018, 1, 1)]
     result = get_datetime_if_exists(data)

@@ -129,34 +129,43 @@ def get_lat_long_climate_zones(latitude, longitude):
     ) = cached_data.climate_zone_geometry
 
     point = Point(longitude, latitude)  # x,y
-    climate_zones = {}
-    for iecc_climate_zone, shape in iecc_climate_zones:
-        if shape.contains(point):
-            climate_zones["iecc_climate_zone"] = iecc_climate_zone
-            break
-    else:
-        climate_zones["iecc_climate_zone"] = None
+    climate_zones = {
+        "iecc_climate_zone": next(
+            (
+                iecc_climate_zone
+                for iecc_climate_zone, shape in iecc_climate_zones
+                if shape.contains(point)
+            ),
+            None,
+        )
+    }
 
-    for iecc_moisture_regime, shape in iecc_moisture_regimes:
-        if shape.contains(point):
-            climate_zones["iecc_moisture_regime"] = iecc_moisture_regime
-            break
-    else:
-        climate_zones["iecc_moisture_regime"] = None
+    climate_zones["iecc_moisture_regime"] = next(
+        (
+            iecc_moisture_regime
+            for iecc_moisture_regime, shape in iecc_moisture_regimes
+            if shape.contains(point)
+        ),
+        None,
+    )
 
-    for ba_climate_zone, shape in ba_climate_zones:
-        if shape.contains(point):
-            climate_zones["ba_climate_zone"] = ba_climate_zone
-            break
-    else:
-        climate_zones["ba_climate_zone"] = None
+    climate_zones["ba_climate_zone"] = next(
+        (
+            ba_climate_zone
+            for ba_climate_zone, shape in ba_climate_zones
+            if shape.contains(point)
+        ),
+        None,
+    )
 
-    for ca_climate_zone, shape in ca_climate_zones:
-        if shape.contains(point):
-            climate_zones["ca_climate_zone"] = ca_climate_zone
-            break
-    else:
-        climate_zones["ca_climate_zone"] = None
+    climate_zones["ca_climate_zone"] = next(
+        (
+            ca_climate_zone
+            for ca_climate_zone, shape in ca_climate_zones
+            if shape.contains(point)
+        ),
+        None,
+    )
 
     return climate_zones
 

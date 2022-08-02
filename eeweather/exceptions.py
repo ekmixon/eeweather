@@ -38,10 +38,7 @@ class UnrecognizedUSAFIDError(EEWeatherError):
 
     def __init__(self, value):
         self.value = value
-        self.message = (
-            'The value "{}" was not recognized as a valid USAF weather station'
-            " identifier.".format(value)
-        )
+        self.message = f'The value "{value}" was not recognized as a valid USAF weather station identifier.'
 
 
 class UnrecognizedZCTAError(EEWeatherError):
@@ -57,8 +54,8 @@ class UnrecognizedZCTAError(EEWeatherError):
 
     def __init__(self, value):
         self.value = value
-        self.message = 'The value "{}" was not recognized as a valid ZCTA identifier.'.format(
-            value
+        self.message = (
+            f'The value "{value}" was not recognized as a valid ZCTA identifier.'
         )
 
 
@@ -78,8 +75,8 @@ class ISDDataNotAvailableError(EEWeatherError):
     def __init__(self, usaf_id, year):
         self.usaf_id = usaf_id
         self.year = year
-        self.message = 'ISD data does not exist for station "{}" in year {}.'.format(
-            usaf_id, year
+        self.message = (
+            f'ISD data does not exist for station "{usaf_id}" in year {year}.'
         )
 
 
@@ -95,8 +92,8 @@ class GSODDataNotAvailableError(EEWeatherError):
     def __init__(self, usaf_id, year):
         self.usaf_id = usaf_id
         self.year = year
-        self.message = 'GSOD data does not exist for station "{}" in year {}.'.format(
-            usaf_id, year
+        self.message = (
+            f'GSOD data does not exist for station "{usaf_id}" in year {year}.'
         )
 
 
@@ -113,7 +110,7 @@ class TMY3DataNotAvailableError(EEWeatherError):
 
     def __init__(self, usaf_id):
         self.usaf_id = usaf_id
-        self.message = 'TMY3 data does not exist for station "{}".'.format(usaf_id)
+        self.message = f'TMY3 data does not exist for station "{usaf_id}".'
 
 
 class CZ2010DataNotAvailableError(EEWeatherError):
@@ -129,7 +126,7 @@ class CZ2010DataNotAvailableError(EEWeatherError):
 
     def __init__(self, usaf_id):
         self.usaf_id = usaf_id
-        self.message = 'CZ2010 data does not exist for station "{}".'.format(usaf_id)
+        self.message = f'CZ2010 data does not exist for station "{usaf_id}".'
 
 
 class NonUTCTimezoneInfoError(EEWeatherError):
@@ -145,7 +142,4 @@ class NonUTCTimezoneInfoError(EEWeatherError):
     """
 
     def __init__(self, this_date):
-        self.message = (
-            '"{}" does not have a UTC timezone. If using the datetime package, it should be'
-            " in the format datetime(1,1,1,tzinfo=pytz.UTC).".format(this_date)
-        )
+        self.message = f'"{this_date}" does not have a UTC timezone. If using the datetime package, it should be in the format datetime(1,1,1,tzinfo=pytz.UTC).'

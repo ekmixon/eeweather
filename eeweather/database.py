@@ -135,7 +135,7 @@ def pretty_floats(obj):
     if isinstance(obj, float):
         return PrettyFloat(round(obj, 4))
     elif isinstance(obj, dict):
-        return dict((k, pretty_floats(v)) for k, v in obj.items())
+        return {k: pretty_floats(v) for k, v in obj.items()}
     elif isinstance(obj, (list, tuple)):
         return list(map(pretty_floats, obj))
     return obj
@@ -194,13 +194,16 @@ def _load_isd_station_metadata(download_path):
             "name": recent["STATION NAME"],
             "icao_code": recent.ICAO,
             "latitude": recent.LAT if recent.LAT not in ("+00.000",) else None,
-            "longitude": recent.LON if recent.LON not in ("+000.000",) else None,
-            "point": Point(float(recent.LON), float(recent.LAT)),
-            "elevation": recent["ELEV(M)"]
-            if not str(float(recent["ELEV(M)"])).startswith("-999")
+            "longitude": recent.LON
+            if recent.LON not in ("+000.000",)
             else None,
+            "point": Point(float(recent.LON), float(recent.LAT)),
+            "elevation": None
+            if str(float(recent["ELEV(M)"])).startswith("-999")
+            else recent["ELEV(M)"],
             "state": recent.STATE,
         }
+
 
     return metadata
 
@@ -273,11 +276,11 @@ def _compute_isd_station_quality(
                 return "low"
 
     # e.g., if end_year == 2017, year_range = ["2013", "2014", ..., "2017"]
-    year_range = set([str(y) for y in range(end_year - (years_back - 1), end_year + 1)])
+    year_range = {str(y) for y in range(end_year - (years_back - 1), end_year + 1)}
 
     def _compute_station_quality(usaf_id):
         years_data = isd_file_metadata.get(usaf_id, {}).get("years", {})
-        if not all([year in years_data for year in year_range]):
+        if any(year not in years_data for year in year_range):
             return quality_func(np.repeat(0, 60))
         counts = defaultdict(lambda: 0)
         for y, year in enumerate(year_range):
@@ -373,23 +376,20 @@ def _load_county_metadata(download_path):
 
         county = row["State FIPS"] + row["County FIPS"]
         if county not in metadata:
-            logger.warn(
-                "Could not find geometry for county {}, skipping.".format(county)
-            )
+            logger.warn(f"Could not find geometry for county {county}, skipping.")
             continue
 
         metadata[county].update(
             {
                 "name": row["County Name"],
                 "iecc_climate_zone": row["IECC Climate Zone"],
-                "iecc_moisture_regime": (
-                    row["IECC Moisture Regime"]
-                    if not pd.isnull(row["IECC Moisture Regime"])
-                    else None
-                ),
+                "iecc_moisture_regime": None
+                if pd.isnull(row["IECC Moisture Regime"])
+                else row["IECC Moisture Regime"],
                 "ba_climate_zone": row["BA Climate Zone"],
             }
         )
+
 
     return metadata
 
@@ -427,11 +427,12 @@ def _load_CA_climate_zone_metadata(download_path):
         geometry = feature["geometry"]
         polygon = shape(geometry)
         metadata[zone] = {
-            "ca_climate_zone": "CA_{}".format(zone),
+            "ca_climate_zone": f"CA_{zone}",
             "name": ca_climate_zone_names[zone],
             "polygon": polygon,
             "geometry": to_geojson(polygon),
         }
+
     return metadata
 
 
@@ -535,7 +536,7 @@ def _compute_containment(
         ]
     )
 
-    for i, polygon in enumerate(polygon_metadata.values()):
+    for polygon in polygon_metadata.values():
         containment = contains(polygon["polygon"], lons, lats)
         for point, c in zip(points, containment):
             if c:

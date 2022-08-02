@@ -32,7 +32,7 @@ def plot_station_mapping(
     isd_station,
     distance_meters,
     target_label="target",
-):  # pragma: no cover
+):    # pragma: no cover
     """ Plots this mapping on a map."""
     try:
         import matplotlib.pyplot as plt
@@ -117,7 +117,7 @@ def plot_station_mapping(
     ax.plot(t_lng, t_lat, "ro", markersize=7, transform=ccrs.Geodetic())
 
     # station label
-    station_label = "{} ({})".format(isd_station.usaf_id, isd_station.name)
+    station_label = f"{isd_station.usaf_id} ({isd_station.name})"
     ax.text(lng + xoffset, lat + yoffset, station_label, transform=ccrs.Geodetic())
 
     # target label
@@ -132,7 +132,7 @@ def plot_station_mapping(
     plt.show()
 
 
-def plot_station_mappings(mapping_results):  # pragma: no cover
+def plot_station_mappings(mapping_results):    # pragma: no cover
     """ Plot a list of mapping results on a map.
 
     Requires matplotlib and cartopy.
@@ -169,7 +169,7 @@ def plot_station_mappings(mapping_results):  # pragma: no cover
         else:
             n_discards += 1
 
-    print("Discarded {} empty mappings".format(n_discards))
+    print(f"Discarded {n_discards} empty mappings")
 
     # figure
     fig = plt.figure(figsize=(60, 60))

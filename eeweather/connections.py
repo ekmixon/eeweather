@@ -38,16 +38,15 @@ def _get_noaa_ftp_connection(n_tries=5, timeout=60):  # pragma: no cover
         try:
             ftp = ftplib.FTP(host, timeout=timeout)
             ftp.login()  # default u='anonymous' p='anonymous@'
-            logger.info("Connected to {}.".format(host))
+            logger.info(f"Connected to {host}.")
             return ftp
         except ftplib.all_errors as e:
             logger.warn(
-                "Failed attempt ({} of {}) to connect to {}:\n{}".format(
-                    i + 1, n_tries, host, e
-                )
+                f"Failed attempt ({i + 1} of {n_tries}) to connect to {host}:\n{e}"
             )
 
-    raise RuntimeError("Could not connect to {}.".format(host))
+
+    raise RuntimeError(f"Could not connect to {host}.")
 
 
 class NOAAFTPConnectionProxy(object):
@@ -71,22 +70,18 @@ class NOAAFTPConnectionProxy(object):
         bytes_string = BytesIO()
         try:
             try:
-                ftp.retrbinary("RETR {}".format(filename), bytes_string.write)
+                ftp.retrbinary(f"RETR {filename}", bytes_string.write)
             except (ftplib.error_temp, ftplib.error_perm, EOFError, IOError) as e:
                 # Bad connection. attempt to reconnect.
-                logger.warn(
-                    "Failed RETR {}:\n{}\n" "Attempting reconnect.".format(filename, e)
-                )
+                logger.warn(f"Failed RETR {filename}:\n{e}\nAttempting reconnect.")
                 ftp = self.reconnect()
-                ftp.retrbinary("RETR {}".format(filename), bytes_string.write)
+                ftp.retrbinary(f"RETR {filename}", bytes_string.write)
         except Exception as e:
-            logger.warn(
-                "Failed RETR {}:\n{}\n" "Not attempting reconnect.".format(filename, e)
-            )
+            logger.warn(f"Failed RETR {filename}:\n{e}\nNot attempting reconnect.")
             return None
 
         bytes_string.seek(0)
-        logger.info("Successfully retrieved ftp://ftp.ncdc.noaa.gov{}".format(filename))
+        logger.info(f"Successfully retrieved ftp://ftp.ncdc.noaa.gov{filename}")
         return bytes_string
 
 

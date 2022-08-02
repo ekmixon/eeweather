@@ -38,7 +38,7 @@ class EEWeatherWarning(object):
         self.data = data
 
     def __repr__(self):
-        return "EEWeatherWarning(qualified_name={})".format(self.qualified_name)
+        return f"EEWeatherWarning(qualified_name={self.qualified_name})"
 
     def json(self):
         """ Return a JSON-serializable representation of this result.

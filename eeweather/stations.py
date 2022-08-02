@@ -155,7 +155,7 @@ def get_isd_filenames(usaf_id, target_year=None, filename_format=None, with_host
             filename_format.format(usaf_id=usaf_id, wban_id=wban_id, year=year)
         )
 
-    if len(filenames) == 0 and target_year is not None:
+    if not filenames and target_year is not None:
         # fallback - use most recent wban id
         cur.execute(
             """
@@ -177,7 +177,7 @@ def get_isd_filenames(usaf_id, target_year=None, filename_format=None, with_host
             )
 
     if with_host:
-        filenames = ["ftp://ftp.ncdc.noaa.gov{}".format(f) for f in filenames]
+        filenames = [f"ftp://ftp.ncdc.noaa.gov{f}" for f in filenames]
 
     return filenames
 
@@ -293,7 +293,7 @@ def fetch_isd_raw_temp_data(usaf_id, year):
                 data.append([dt, tempC])
             gzipped.close()
 
-    if data == []:
+    if not data:
         raise ISDDataNotAvailableError(usaf_id, year)
 
     dates, temps = zip(*sorted(data))
@@ -354,7 +354,7 @@ def fetch_gsod_raw_temp_data(usaf_id, year):
                 data.append([dt, tempC])
             gzipped.close()
 
-    if data == []:
+    if not data:
         raise GSODDataNotAvailableError(usaf_id, year)
 
     dates, temps = zip(*sorted(data))
@@ -369,10 +369,8 @@ def fetch_gsod_daily_temp_data(usaf_id, year):
 
 
 def fetch_tmy3_hourly_temp_data(usaf_id):
-    url = (
-        "https://storage.googleapis.com/openeemeter-public-resources/"
-        "tmy3_archive/{}TYA.CSV".format(usaf_id)
-    )
+    url = f"https://storage.googleapis.com/openeemeter-public-resources/tmy3_archive/{usaf_id}TYA.CSV"
+
 
     # checks that the station has TMY3 data associated with it.
     tmy3_metadata = get_tmy3_station_metadata(usaf_id)
@@ -381,7 +379,7 @@ def fetch_tmy3_hourly_temp_data(usaf_id):
 
 
 def fetch_cz2010_hourly_temp_data(usaf_id):
-    url = "https://storage.googleapis.com/oee-cz2010/csv/{}_CZ2010.CSV".format(usaf_id)
+    url = f"https://storage.googleapis.com/oee-cz2010/csv/{usaf_id}_CZ2010.CSV"
 
     # checks that the station has CZ2010 data associated with it.
     cz2010_metadata = get_cz2010_station_metadata(usaf_id)
@@ -395,7 +393,7 @@ def request_text(url):  # pragma: no cover
     if response.ok:
         return response.text
     else:
-        raise RuntimeError("Could not find {}.".format(url))
+        raise RuntimeError(f"Could not find {url}.")
 
 
 def fetch_hourly_normalized_temp_data(usaf_id, url, source_name):
@@ -409,9 +407,9 @@ def fetch_hourly_normalized_temp_data(usaf_id, url, source_name):
 
     for line in lines[2:]:
         row = line.split(",")
-        month = row[0][0:2]
+        month = row[0][:2]
         day = row[0][3:5]
-        hour = int(row[1][0:2]) - 1
+        hour = int(row[1][:2]) - 1
 
         # YYYYMMDDHH
         date_string = "1900{}{}{:02d}".format(month, day, hour)
@@ -429,23 +427,23 @@ def fetch_hourly_normalized_temp_data(usaf_id, url, source_name):
 
 
 def get_isd_hourly_temp_data_cache_key(usaf_id, year):
-    return "isd-hourly-{}-{}".format(usaf_id, year)
+    return f"isd-hourly-{usaf_id}-{year}"
 
 
 def get_isd_daily_temp_data_cache_key(usaf_id, year):
-    return "isd-daily-{}-{}".format(usaf_id, year)
+    return f"isd-daily-{usaf_id}-{year}"
 
 
 def get_gsod_daily_temp_data_cache_key(usaf_id, year):
-    return "gsod-daily-{}-{}".format(usaf_id, year)
+    return f"gsod-daily-{usaf_id}-{year}"
 
 
 def get_tmy3_hourly_temp_data_cache_key(usaf_id):
-    return "tmy3-hourly-{}".format(usaf_id)
+    return f"tmy3-hourly-{usaf_id}"
 
 
 def get_cz2010_hourly_temp_data_cache_key(usaf_id):
-    return "cz2010-hourly-{}".format(usaf_id)
+    return f"cz2010-hourly-{usaf_id}"
 
 
 def _expired(last_updated, year):
@@ -532,10 +530,7 @@ def validate_tmy3_hourly_temp_data_cache(usaf_id):
     store = eeweather.connections.key_value_store_proxy.get_store()
 
     # fail if no key
-    if not store.key_exists(key):
-        return False
-
-    return True
+    return bool(store.key_exists(key))
 
 
 def validate_cz2010_hourly_temp_data_cache(usaf_id):
@@ -543,10 +538,7 @@ def validate_cz2010_hourly_temp_data_cache(usaf_id):
     store = eeweather.connections.key_value_store_proxy.get_store()
 
     # fail if no key
-    if not store.key_exists(key):
-        return False
-
-    return True
+    return bool(store.key_exists(key))
 
 
 def _serialize(ts, freq):
@@ -555,7 +547,7 @@ def _serialize(ts, freq):
     elif freq == "D":
         dt_format = "%Y%m%d"
     else:  # pragma: no cover
-        raise ValueError('Unrecognized frequency "{}"'.format(freq))
+        raise ValueError(f'Unrecognized frequency "{freq}"')
 
     return [
         [d.strftime(dt_format), round(temp, 4) if pd.notnull(temp) else None]
@@ -589,7 +581,7 @@ def _deserialize(data, freq):
     elif freq == "D":
         dt_format = "%Y%m%d"
     else:  # pragma: no cover
-        raise ValueError('Unrecognized frequency "{}"'.format(freq))
+        raise ValueError(f'Unrecognized frequency "{freq}"')
 
     dates, values = zip(*data)
     index = pd.to_datetime(dates, format=dt_format, utc=True)
@@ -840,7 +832,6 @@ def load_isd_hourly_temp_data(
                         data={"year": year},
                     )
                 )
-                pass
     else:
         data = [
             load_isd_hourly_temp_data_cached_proxy(
@@ -1027,9 +1018,7 @@ def load_cached_isd_hourly_temp_data(usaf_id):
         for year in range(2000, datetime.now().year + 1)
         if store.key_exists(get_isd_hourly_temp_data_cache_key(usaf_id, year))
     ]
-    if data == []:
-        return None
-    return pd.concat(data).resample("H").mean()
+    return pd.concat(data).resample("H").mean() if data else None
 
 
 def load_cached_isd_daily_temp_data(usaf_id):
@@ -1040,9 +1029,7 @@ def load_cached_isd_daily_temp_data(usaf_id):
         for year in range(2000, datetime.now().year + 1)
         if store.key_exists(get_isd_daily_temp_data_cache_key(usaf_id, year))
     ]
-    if data == []:
-        return None
-    return pd.concat(data).resample("D").mean()
+    return pd.concat(data).resample("D").mean() if data else None
 
 
 def load_cached_gsod_daily_temp_data(usaf_id):
@@ -1053,9 +1040,7 @@ def load_cached_gsod_daily_temp_data(usaf_id):
         for year in range(2000, datetime.now().year + 1)
         if store.key_exists(get_gsod_daily_temp_data_cache_key(usaf_id, year))
     ]
-    if data == []:
-        return None
-    return pd.concat(data).resample("D").mean()
+    return pd.concat(data).resample("D").mean() if data else None
 
 
 def load_cached_tmy3_hourly_temp_data(usaf_id):
@@ -1146,7 +1131,7 @@ class ISDStation(object):
         return self.usaf_id
 
     def __repr__(self):
-        return "ISDStation('{}')".format(self.usaf_id)
+        return f"ISDStation('{self.usaf_id}')"
 
     def _load_metadata(self):
         metadata = get_isd_station_metadata(self.usaf_id)

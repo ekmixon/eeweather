@@ -100,7 +100,7 @@ class MockNOAAFTPConnectionProxy:
 class MockKeyValueStoreProxy:
     def __init__(self):
         # create a new test store in a temporary folder
-        self.store = KeyValueStore("sqlite:///{}/cache.db".format(tempfile.mkdtemp()))
+        self.store = KeyValueStore(f"sqlite:///{tempfile.mkdtemp()}/cache.db")
 
     def get_store(self):
         return self.store

@@ -386,21 +386,20 @@ def select_station(
     def _test_station(station):
         if coverage_range is None:
             return True, []
-        else:
-            start_date, end_date = coverage_range
-            try:
-                tempC, warnings = eeweather.mockable.load_isd_hourly_temp_data(
-                    station, start_date, end_date, fetch_from_web
-                )
-            except ISDDataNotAvailableError:
-                return False, []  # reject
+        start_date, end_date = coverage_range
+        try:
+            tempC, warnings = eeweather.mockable.load_isd_hourly_temp_data(
+                station, start_date, end_date, fetch_from_web
+            )
+        except ISDDataNotAvailableError:
+            return False, []  # reject
 
-            # TODO(philngo): also need to incorporate within-day limits
-            if len(tempC) > 0:
-                fraction_coverage = tempC.notnull().sum() / float(len(tempC))
-                return (fraction_coverage > min_fraction_coverage), warnings
-            else:
-                return False, []  # reject
+        # TODO(philngo): also need to incorporate within-day limits
+        if len(tempC) > 0:
+            fraction_coverage = tempC.notnull().sum() / float(len(tempC))
+            return (fraction_coverage > min_fraction_coverage), warnings
+        else:
+            return False, []  # reject
 
     def _station_warnings(station, distance_meters):
         return [

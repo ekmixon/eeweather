@@ -36,10 +36,7 @@ def get_datetime_if_exists(data):
         return None
     else:
         dt = data[0]
-    if is_tz_naive(dt):
-        return pytz.UTC.localize(data[0])
-    else:
-        return dt
+    return pytz.UTC.localize(data[0]) if is_tz_naive(dt) else dt
 
 
 def is_tz_naive(dt):
@@ -53,15 +50,15 @@ class KeyValueStore(object):
         self._prepare_db(url)
 
     def __repr__(self):
-        return 'KeyValueStore("{}")'.format(self.url)
+        return f'KeyValueStore("{self.url}")'
 
     def _get_url(self):  # pragma: no cover (tests always provide url)
         url = os.environ.get("EEWEATHER_CACHE_URL")
         if url is None:
-            directory = "{}/.eeweather".format(os.path.expanduser("~"))
+            directory = f'{os.path.expanduser("~")}/.eeweather'
             if not os.path.exists(directory):
                 os.makedirs(directory)
-            url = "sqlite:///{}/cache.db".format(directory)
+            url = f"sqlite:///{directory}/cache.db"
         return url
 
     def _prepare_db(self, url=None):
@@ -110,10 +107,7 @@ class KeyValueStore(object):
         s = select([self.items.c.data]).where(self.items.c.key == key)
         result = s.execute()
         data = result.fetchone()
-        if data is None:
-            return None
-        else:
-            return json.loads(data[0])
+        return None if data is None else json.loads(data[0])
 
     def key_updated(self, key):
         s = select([self.items.c.updated]).where(self.items.c.key == key)
