@@ -6,3 +6,4 @@ Sphinx==2.1.1
 sphinx-autobuild==0.7.1
 sphinxcontrib-spelling==4.2.1
 typing==3.6.6
+setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
